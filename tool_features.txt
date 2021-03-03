@@ -1,0 +1,7 @@
+### File to list features of RRBS region finding tools as I test them
+# tool = tool name
+# multithread_available = Can the tool be multithreaded? no/yes/maybe, maybe for R programs that could maybe be made parallel
+# number_steps = number of steps the program requires to give me a list of cpgs; does not include running my allele counting script or making a whitelist
+tool	multithread_available	number_steps
+methclone	no	1
+cgmaptools	no	3

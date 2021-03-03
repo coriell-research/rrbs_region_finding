@@ -82,6 +82,25 @@ tools
 
 Try with one sample first
 
+#### Set up tool comparison file
+*2021-03-03*
+
+```bash
+[kkeith]$ pwd
+/home/kkeith/data/rrbs_region_finding
+[kkeith]$ nano tool_features.txt
+[kkeith]$ more tool_features.txt 
+### File to list features of RRBS region finding tools as I test them
+# tool = tool name
+# multithread_available = Can the tool be multithreaded? no/yes/maybe, maybe for R programs that could
+ maybe be made parallel
+# number_steps = number of steps the program requires to give me a list of cpgs; does not include runn
+ing my allele counting script or making a whitelist
+tool	multithread_available	number_steps
+methclone	no	1
+cgmaptools	no	3
+```
+
 #### methclone
 
 **OLD** Re-ran with new version and tracking time
@@ -125,10 +144,19 @@ mnt/data/data_kk/rrbs_region_finding
 **Step 1:** Convert BAM to CGMap file
 
 ```
+### OLD, not this coode
 [kkeith]$ tmux attach -t rrbs_regions
 [kkeith]$ pwd
 /home/kkeith/data/rrbs_region_finding/cgmaptools
 [kkeith]$ /usr/local/programs/rrbs_region_finder/cgmaptools/cgmaptools convert bam2cgmap -b ../data/M13_sorted.bam -g /mnt/data/gdata/human/hg19_hg37/hg19/hg19_soft_masked/hg19.fa -o cgmaptools_M13 --rmOverlap
+
+### CORRECT
+[kkeith]$ tmux attach -t regions
+[kkeith]$ pwd
+/home/kkeith/data/rrbs_region_finding/tools/methclone
+[kkeith]$ cd ../cgmaptools/
+
+for i in ../../data/*.bam; do j=${i##*/}; echo -e "cgmaptools_convert\tstart\t$(date +'%F')\t$(date +'%T')\t${j/_sorted.bam/}" >> cgmaptools_time.txt; /usr/local/programs/rrbs_region_finder/cgmaptools/cgmaptools convert bam2cgmap --rmOverlap -b $i -g /mnt/data/gdata/human/hg19_hg37/hg19/hg19_soft_masked/hg19.fa -o 01_cgmaptools_${j/_sorted.bam/}; echo -e "cgmaptools_convert\tend\t$(date +'%F')\t$(date +'%T')\t${j/_sorted.bam/}" >> cgmaptools_time.txt; done
 ```
 **Step 2:** Call SNPs; `CGmaptools` recommends the Bayesion mode (using flags `-m bayes --bayes-dynamicP`) since it's more accurate than the default binary mode. However since the documentation says binary mode is faster and I'm just trying to determine if the output of the tool is usable, I went with that.
 
