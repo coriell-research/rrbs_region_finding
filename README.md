@@ -15,6 +15,44 @@ Because we want to do entropy calculations in RRBS, we need a way of finding CpG
 [kkeith]$ ln -s /mnt/data/research_data/2019-12-19_novogene_rrbs46_aging/ aging_data_batch2
 [kkeith]$ ln -s /mnt/data/data_kk/aging_rrbs/cord_blood_rrbs/ cord_blood_data
 ```
+#### Reorganizing
+*2021-03-03*
+
+Put tools in their own folder and make into a git repository
+
+```bash
+[kkeith]$ cd /home/kkeith/data/rrbs_region_finding
+[kkeith]$ mkdir tools
+[kkeith]$ mv cgmaptools/ methclone_M13.txt.gz tools
+
+### set up
+[kkeith]$ git init
+[kkeith]$ git add README.md
+[kkeith]$ nano .gitignore
+[kkeith]$ more .gitignore 
+### folders to ignore
+data/
+tools
+
+### files to ignore
+.DS_Store
+[kkeith]$ git add .gitignore
+[kkeith]$ git commit -m 'first commit'
+[kkeith]$ git branch -M main
+[kkeith]$ git remote add origin git@github.com:coriell-research/rrbs_region_finding.git
+[kkeith]$ git push -u origin main
+
+### rearrange data folder because I want actual RRBS and amplicon data and index amplicon BAM file
+[kkeith]$ cd data
+[kkeith]$ [kkeith]$ mkdir rrbs
+[kkeith]$ mv aging_data_batch* cord_blood_data rrbs/
+[kkeith]$ mkdir amplicons
+[kkeith]$ ln -s /mnt/data/research_data/2020-11-17_bis_amplicons_woonbok/processed_data/03_align/hg19/ amplicons/amps_round2_bams
+[kkeith]$ mv M13_sorted.bam M13_rrbs_sorted.bam
+[kkeith]$ mv M13_sorted.bam.bai M13_rrbs_sorted.bam.bai
+[kkeith]$ samtools sort -t 8 amplicons/amps_round2_bams/M13_CKDL200165722-1a-AK845-GD06_HF5LTCCX2_L1_1_val_1_bismark_bt2_pe.bam -O BAM -o M13_amplicon_sorted.bam
+[kkeith]$ samtools index -@ 4 M13_amplicon_sorted.bam
+```
 
 ---
 
@@ -46,6 +84,8 @@ Try with one sample first
 
 #### methclone
 
+**OLD** Re-ran with new version and tracking time
+
 ```bash
 [kkeith]$ tmux new -s rrbs_regions
 [kkeith]$ pwd
@@ -58,6 +98,21 @@ mnt/data/data_kk/rrbs_region_finding
 ### run methclone
 [kkeith]$ methclone data/M13_sorted.bam data/M13_sorted.bam methclone_M13.txt.gz M13
 ```
+<br>
+
+*2021-03-03* **CORRECT** Re-ran with updated version of methClone, keeping track of how long it takes to run, and running on both the RRBS and amplicon version of the sample
+
+```bash
+[kkeith]$ cd /home/kkeith/data/rrbs_region_finding/tools
+[kkeith]$ rm methclone_M13.txt.gz
+[kkeith]$ mkdir methclone
+[kkeith]$ cd methclone
+[kkeith]$ tmux new -s regions
+[kkeith]$ for i in ../../data/*.bam; do j=${i##*/}; echo -e "methclone\tstart\t$(date +'%F')\t$(date +'%T')\t${j/_sorted.bam/}" >> methclone_time.txt; methClone --f1=$i -s ${j/_sorted.bam/} -o ${j/_sorted.bam/}_methclone.txt.gz; echo -e "methclone\tend\t$(date +'%F')\t$(date +'%T')\t${j/_sorted.bam/}" >> methclone_time.txt; done
+[detached (from session regions)]
+```
+<br>
+
 ### CGMapTools
 
 ```bash
