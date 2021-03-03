@@ -1,0 +1,6 @@
+### folders to ignore
+data/
+tools
+
+### files to ignore
+.DS_Store
